@@ -1,0 +1,30 @@
+
+buildscript {
+    ext.kotlin_version = '1.1.1'
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.3.0'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
+
+// retrolambda
+buildscript {
+    dependencies {
+        classpath 'me.tatarka:gradle-retrolambda:3.6.0'
+        classpath 'me.tatarka.retrolambda.projectlombok:lombok.ast:0.2.3.a2'
+    }
+    configurations.classpath.exclude group: 'com.android.tools.external.lombok'
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
