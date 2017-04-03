@@ -90,8 +90,7 @@ public class CollectionBenchmark {
                 pad("Solid:", solid / iterate, 12),
                 pad("Pass:", pass / iterate, 12));
 
-        System.out.printf("---- OVERHEAD ----\n");
-        System.out.printf("    %s, %s, %s, %s, %s, %s\n",
+        System.out.printf("OVERHEAD:    %s, %s, %s, %s, %s, %s\n",
                 pad("size:", list.size(), 10),
                 pad("Java 8 streams:", (java - imperative) / iterate, 22),
                 pad("Kotlin sequence:", (kotlin - imperative) / iterate, 22),
