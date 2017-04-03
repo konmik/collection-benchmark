@@ -9,6 +9,10 @@ import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.konmik.collectionbenchmark.Pass.filter;
+import static com.konmik.collectionbenchmark.Pass.flatMap;
+import static com.konmik.collectionbenchmark.Pass.map;
+import static com.konmik.collectionbenchmark.Pass.passToList;
 import static java.lang.System.nanoTime;
 import static solid.collectors.ToList.toList;
 
@@ -70,14 +74,30 @@ public class CollectionBenchmark {
         }
         long solid = nanoTime() - begin;
 
-        System.out.printf("    %s, %s, %s, %s, %s, %s\n",
+        begin = nanoTime();
+        for (int i = 0; i < iterate; i++) {
+            benchmarkPass(list);
+        }
+        long pass = nanoTime() - begin;
+
+        System.out.printf("    %s, %s, %s, %s, %s, %s, %s\n",
                 pad("size:", list.size(), 10),
                 pad("Java 8 streams:", java / iterate, 22),
                 pad("Kotlin sequence:", kotlin / iterate, 22),
                 pad("Kotlin list:", kotlinDirect / iterate, 19),
 //                pad("ImmutableListUtils:", imu / iterate, 25),
                 pad("Imperative:", imperative / iterate, 17),
-                pad("Solid:", solid / iterate, 12));
+                pad("Solid:", solid / iterate, 12),
+                pad("Pass:", pass / iterate, 12));
+
+        System.out.printf("---- OVERHEAD ----\n");
+        System.out.printf("    %s, %s, %s, %s, %s, %s\n",
+                pad("size:", list.size(), 10),
+                pad("Java 8 streams:", (java - imperative) / iterate, 22),
+                pad("Kotlin sequence:", (kotlin - imperative) / iterate, 22),
+                pad("Kotlin list:", (kotlinDirect - imperative) / iterate, 19),
+                pad("Solid:", (solid - imperative) / iterate, 12),
+                pad("Pass:", (pass - imperative) / iterate, 12));
     }
 
     @TargetApi(Build.VERSION_CODES.N)
@@ -87,6 +107,16 @@ public class CollectionBenchmark {
                 .map(Object::toString)
                 .flatMap(it -> Stream.of(it, it + 1))
                 .collect(Collectors.toList());
+    }
+
+    private static void benchmarkPass(ArrayList<Integer> list) {
+        passToList(list, list.size() * 2, c ->
+                filter(it -> it % 10 != 0,
+                        map(Object::toString,
+                                flatMap((it, consumer) -> {
+                                    consumer.call(it);
+                                    consumer.call(it + 1);
+                                }, c))));
     }
 
     private static String pad(String tag, long value, int width) {
@@ -103,7 +133,7 @@ public class CollectionBenchmark {
                 .filter(it -> it % 10 != 0)
                 .map(Object::toString)
                 .flatMap(it -> solid.stream.Stream.of(it, it + 1))
-                .collect(toList());
+                .collect(toList(list.size() * 2));
     }
 
     // Can't provide implementation details because the code is proprietary.
