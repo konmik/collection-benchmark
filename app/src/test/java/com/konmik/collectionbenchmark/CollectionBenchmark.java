@@ -10,10 +10,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.konmik.collectionbenchmark.Pass.filter;
-import static com.konmik.collectionbenchmark.Pass.flatMap;
-import static com.konmik.collectionbenchmark.Pass.map;
-import static com.konmik.collectionbenchmark.Pass.passToList;
+import pass.Pass;
+import pass.PassCollectors;
+
 import static java.lang.System.nanoTime;
 import static java.util.Arrays.asList;
 import static solid.collectors.ToList.toList;
@@ -28,6 +27,10 @@ public class CollectionBenchmark {
 
     @Test
     public void benchmark() {
+
+        System.out.println("Sit back and relax, the test needs to run for several minutes.");
+        System.out.println("Don't touch you computer and don't run background tasks while it is working.");
+
         List<String> rows = asList(
                 "SIZE",
                 "Java 8 streams",
@@ -137,16 +140,6 @@ public class CollectionBenchmark {
                 .collect(Collectors.toList());
     }
 
-    private static void benchmarkPass(ArrayList<Integer> list) {
-        passToList(list, list.size() * 2, c ->
-                filter(it -> it % 10 != 0,
-                        map(Object::toString,
-                                flatMap((it, consumer) -> {
-                                    consumer.call(it);
-                                    consumer.call(it + 1);
-                                }, c))));
-    }
-
     private static String pad(Object value, int width) {
         String asString = value.toString();
         StringBuilder builder = new StringBuilder();
@@ -167,7 +160,7 @@ public class CollectionBenchmark {
     private static void benchmarkCopyList(ArrayList<Integer> list) {
         List<Integer> filtered = CopyList.filter(list, it -> it % 10 != 0);
         List<String> mapped = CopyList.map(filtered, Object::toString);
-        List<String> flatMap = CopyList.flatMap(mapped, it -> asList(it, it + 1));
+        CopyList.flatMap(mapped, it -> asList(it, it + 1));
     }
 
     private static void benchmarkImperative(ArrayList<Integer> list) {
@@ -179,5 +172,16 @@ public class CollectionBenchmark {
                 result.add(Integer.toString(it) + 1);
             }
         }
+    }
+
+    private static void benchmarkPass(ArrayList<Integer> list) {
+        Pass.stream(list)
+                .filter(it -> it % 10 != 0)
+                .map(Object::toString)
+                .flatMap((it, consumer) -> {
+                    consumer.call(it);
+                    consumer.call(it + 1);
+                })
+                .collect(PassCollectors.toList(list.size() * 2));
     }
 }
