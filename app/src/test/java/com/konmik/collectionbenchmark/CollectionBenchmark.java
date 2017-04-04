@@ -6,6 +6,7 @@ import android.os.Build;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -14,17 +15,43 @@ import static com.konmik.collectionbenchmark.Pass.flatMap;
 import static com.konmik.collectionbenchmark.Pass.map;
 import static com.konmik.collectionbenchmark.Pass.passToList;
 import static java.lang.System.nanoTime;
+import static java.util.Arrays.asList;
 import static solid.collectors.ToList.toList;
 
 public class CollectionBenchmark {
 
-    public static final int ITEMS = 10000000;
+    public static final int ITEMS = 100000000;
     public static final int MAX_LIST_SIZE = 1024;
+
+    private static List<List<Long>> totals = new ArrayList<>();
+    private static List<List<Long>> overhead = new ArrayList<>();
 
     @Test
     public void benchmark() {
+        List<String> rows = asList(
+                "SIZE",
+                "Java 8 streams",
+                "Kotlin sequence",
+                "Kotlin list",
+                "CopyList",
+                "Imperative",
+                "Solid",
+                "Pass");
+
         for (int size = MAX_LIST_SIZE; size > 1; size /= 2)
             benchmarkSize(size);
+
+        for (int i = 0; i < 2; i++) {
+            System.out.println(i == 0 ? "TOTALS" : "OVERHEAD");
+            List<List<Long>> report = i == 0 ? totals : overhead;
+            for (int r = 0; r < rows.size(); r++) {
+                System.out.print(pad(rows.get(r), 20));
+                for (List<Long> numbers : report) {
+                    System.out.print(pad(numbers.get(r), 7));
+                }
+                System.out.println();
+            }
+        }
     }
 
     private void benchmarkSize(int size) {
@@ -56,11 +83,11 @@ public class CollectionBenchmark {
         }
         long java = nanoTime() - begin;
 
-//        begin = nanoTime();
-//        for (int i = 0; i < iterate; i++) {
-//            benchmarkIMU(list);
-//        }
-//        long imu = nanoTime() - begin;
+        begin = nanoTime();
+        for (int i = 0; i < iterate; i++) {
+            benchmarkCopyList(list);
+        }
+        long copyList = nanoTime() - begin;
 
         begin = nanoTime();
         for (int i = 0; i < iterate; i++) {
@@ -80,23 +107,25 @@ public class CollectionBenchmark {
         }
         long pass = nanoTime() - begin;
 
-        System.out.printf("    %s, %s, %s, %s, %s, %s, %s\n",
-                pad("size:", list.size(), 10),
-                pad("Java 8 streams:", java / iterate, 22),
-                pad("Kotlin sequence:", kotlin / iterate, 22),
-                pad("Kotlin list:", kotlinDirect / iterate, 19),
-//                pad("ImmutableListUtils:", imu / iterate, 25),
-                pad("Imperative:", imperative / iterate, 17),
-                pad("Solid:", solid / iterate, 12),
-                pad("Pass:", pass / iterate, 12));
+        totals.add(asList(
+                (long) list.size(),
+                java / iterate,
+                kotlin / iterate,
+                kotlinDirect / iterate,
+                copyList / iterate,
+                imperative / iterate,
+                solid / iterate,
+                pass / iterate));
 
-        System.out.printf("OVERHEAD:    %s, %s, %s, %s, %s, %s\n",
-                pad("size:", list.size(), 10),
-                pad("Java 8 streams:", (java - imperative) / iterate, 22),
-                pad("Kotlin sequence:", (kotlin - imperative) / iterate, 22),
-                pad("Kotlin list:", (kotlinDirect - imperative) / iterate, 19),
-                pad("Solid:", (solid - imperative) / iterate, 12),
-                pad("Pass:", (pass - imperative) / iterate, 12));
+        overhead.add(asList(
+                (long) list.size(),
+                (java - imperative) / iterate,
+                (kotlin - imperative) / iterate,
+                (kotlinDirect - imperative) / iterate,
+                (copyList - imperative) / iterate,
+                (imperative - imperative) / iterate,
+                (solid - imperative) / iterate,
+                (pass - imperative) / iterate));
     }
 
     @TargetApi(Build.VERSION_CODES.N)
@@ -118,9 +147,9 @@ public class CollectionBenchmark {
                                 }, c))));
     }
 
-    private static String pad(String tag, long value, int width) {
-        String asString = Long.toString(value);
-        StringBuilder builder = new StringBuilder(tag);
+    private static String pad(Object value, int width) {
+        String asString = value.toString();
+        StringBuilder builder = new StringBuilder();
         while (builder.length() + asString.length() < width) {
             builder.append(' ');
         }
@@ -135,13 +164,11 @@ public class CollectionBenchmark {
                 .collect(toList(list.size() * 2));
     }
 
-    // Can't provide implementation details because the code is proprietary.
-    // I can say that it is the simplest possible implementation with creation a full list copy for each call.
-//    private static void benchmarkIMU(ArrayList<Integer> list) {
-//        List<Integer> filtered = filtered(list, it -> it % 10 != 0);
-//        List<String> mapped = mapped(filtered, Object::toString);
-//        List<String> flatMap = flatMap(mapped, it -> ImmutableListUtils.list(it, it + 1));
-//    }
+    private static void benchmarkCopyList(ArrayList<Integer> list) {
+        List<Integer> filtered = CopyList.filter(list, it -> it % 10 != 0);
+        List<String> mapped = CopyList.map(filtered, Object::toString);
+        List<String> flatMap = CopyList.flatMap(mapped, it -> asList(it, it + 1));
+    }
 
     private static void benchmarkImperative(ArrayList<Integer> list) {
         ArrayList<String> result = new ArrayList<>(list.size() * 2);
