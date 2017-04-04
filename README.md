@@ -22,11 +22,7 @@ The most interesting and perspective is *Pass* - my new look on collection libra
 Instead of being lazy, it is strict, so it does not need to keep counters
 and temporary variables for each operation. It also does not need to call
 `hasNext` for each processed item.
-*Pass* adds from 3x to 20x less overhead than streaming libraries.
-
-Currently *Pass* does not look as good as other streaming libraries,
-but it is just a matter of syntactic sugar, it can be easily wrapped
-into streaming interface.
+*Pass* adds from 3x to 20x less overhead than lazy streaming libraries.
 
 My overall conclusion is that lazy evaluations are
 overcomplicated, slow, unsafe and overvalued.
