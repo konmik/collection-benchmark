@@ -1,5 +1,5 @@
 package pass;
 
 public interface PassCollector<T, R> {
-    R call(PassEmitter<T> emitter);
+    R call(Emitter<T> emitter);
 }

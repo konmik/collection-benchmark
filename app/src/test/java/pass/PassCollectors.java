@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PassCollectors {
+
     public static <T> PassCollector<T, List<T>> toList() {
         return emitter -> {
             ArrayList<T> list = new ArrayList<>();

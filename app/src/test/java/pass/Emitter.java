@@ -1,5 +1,5 @@
 package pass;
 
-public interface PassEmitter<T> {
+public interface Emitter<T> {
     void emit(Consumer<T> consumer);
 }
