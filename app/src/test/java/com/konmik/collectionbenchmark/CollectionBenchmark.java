@@ -168,8 +168,9 @@ public class CollectionBenchmark {
         for (int i = 0; i < list.size(); i++) {
             int it = list.get(i);
             if (it % 10 != 0) {
-                result.add(Integer.toString(it));
-                result.add(Integer.toString(it) + 1);
+                String str = Integer.toString(it);
+                result.add(str);
+                result.add(str + 1);
             }
         }
     }
