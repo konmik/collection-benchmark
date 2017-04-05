@@ -22,7 +22,7 @@ The most interesting and perspective is *Pass* - my new look on collection libra
 Instead of being lazy, it is strict, so it does not need to keep counters
 and temporary variables for each operation. It also does not need to call
 `hasNext` for each processed item.
-*Pass* adds from 3x to 20x less overhead than lazy streaming libraries.
+*Pass* adds **from 2x to 20x less overhead** than lazy streaming libraries.
 
 My overall conclusion is that lazy evaluations are
 overcomplicated, slow, unsafe and overvalued.
@@ -30,20 +30,20 @@ overcomplicated, slow, unsafe and overvalued.
 ```
 TOTALS
                 SIZE   1024    512    256    128     64     32     16      8      4      2
-     Kotlin sequence  78127  36437  18181   8952   4546   2337   1150    567    261    125
-         Kotlin list  72202  35211  17237   8777   4308   2191   1111    572    271    139
-      Java 8 streams  66450  33518  16599   8210   4070   2052   1062    578    296    170
-            CopyList  63649  32198  15564   7926   4016   1995   1002    490    238    127
-               Solid  72592  36178  17708   8619   4429   2182   1052    557    264    125
-                Pass  47629  23010  11450   5633   2722   1331    653    334    163     77
-          Imperative  45044  21391  10577   4830   2365   1132    538    259    121     52
+     Kotlin sequence  78878  55096  23205   9217   4540   2670   1234    723    317    148
+         Kotlin list  73244  42902  19850  10224   4904   2628   1132    699    316    155
+      Java 8 streams  68229  37215  18002  11124   5243   2493   1158    673    377    197
+               Solid  72016  56111  18570  10260   5204   2910   1226    639    290    160
+            CopyList  66673  33480  16314  10906   5041   2576   1231    606    285    145
+                Pass  51870  35591  11850   6046   3421   1544    718    382    190    102
+          Imperative  43083  26227  10527   5929   2950   1468    687    324    140     60
 OVERHEAD
                 SIZE   1024    512    256    128     64     32     16      8      4      2
-     Kotlin sequence  33083  15046   7604   4121   2181   1204    611    307    140     72
-         Kotlin list  27158  13820   6660   3946   1942   1058    572    312    150     86
-      Java 8 streams  21406  12126   6022   3380   1705    920    523    318    175    117
-            CopyList  18605  10807   4986   3095   1650    863    463    230    117     74
-               Solid  27548  14787   7131   3789   2064   1049    513    297    143     73
-                Pass   2585   1619    872    802    357    198    114     74     42     24
+     Kotlin sequence  35794  28869  12677   3287   1589   1202    546    399    176     87
+         Kotlin list  30161  16674   9323   4294   1954   1160    445    375    176     95
+      Java 8 streams  25145  10987   7475   5195   2293   1024    470    349    237    136
+               Solid  28932  29883   8042   4330   2253   1441    539    314    150     99
+            CopyList  23589   7253   5786   4976   2091   1107    543    282    145     85
+                Pass   8786   9364   1322    116    471     75     30     57     50     42
           Imperative      0      0      0      0      0      0      0      0      0      0
 ```
