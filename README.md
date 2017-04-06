@@ -18,8 +18,7 @@ In most cases it is not better than *CopyList* - my trivial implementation of
 operations on list which allocated a new list every time.
 
 The most interesting and perspective is *Pass* - my new look on collection libraries.
-Instead of being lazy, it is strict, so it does not need to keep counters
-and temporary variables for each operation.
+Instead of being lazy, it is strict, so it does not need to keep excessive temporary variables.
 It also does not need to call `hasNext` for each processed item so it is thread-safe.
 *Pass* adds **from 2x to 5x less overhead** than lazy streaming libraries.
 
