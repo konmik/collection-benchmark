@@ -1,9 +1,6 @@
 package com.konmik.collectionbenchmark;
 
-import android.annotation.TargetApi;
-import android.os.Build;
-
-import org.junit.Test;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,21 +22,20 @@ public class CollectionBenchmark {
     private static List<List<Long>> totals = new ArrayList<>();
     private static List<List<Long>> overhead = new ArrayList<>();
 
-    @Test
-    public void benchmark() {
+    public void benchmark1() {
 
         System.out.println("Sit back and relax, the test needs to run for several minutes.");
         System.out.println("Don't touch you computer and don't run background tasks while it is working.");
 
         List<String> rows = asList(
-                "SIZE",
-                "Java 8 streams",
-                "Kotlin sequence",
-                "Kotlin list",
-                "CopyList",
-                "Imperative",
-                "Solid",
-                "Pass");
+            "SIZE",
+            "Java 8 streams",
+            "Kotlin sequence",
+            "Kotlin list",
+            "CopyList",
+            "Imperative",
+            "Solid",
+            "Pass");
 
         for (int size = MAX_LIST_SIZE; size > 1; size /= 2)
             benchmarkSize(size);
@@ -61,28 +57,25 @@ public class CollectionBenchmark {
 
         int iterate = ITEMS / size;
 
-        ArrayList<Integer> list = new ArrayList<>();
-        for (int i = 0; i < size; i++) {
-            list.add(i);
-        }
+        ArrayList<Integer> list = generate(size);
 
         long begin;
 
         begin = nanoTime();
         for (int i = 0; i < iterate; i++) {
-            Benchmark.INSTANCE.benchmarkKotlin(list);
+            BenchmarkKotlin.INSTANCE.benchmarkKotlinSequence(list);
         }
         long kotlin = nanoTime() - begin;
 
         begin = nanoTime();
         for (int i = 0; i < iterate; i++) {
-            Benchmark.INSTANCE.benchmarkKotlinDirect(list);
+            BenchmarkKotlin.INSTANCE.benchmarkKotlinList(list);
         }
         long kotlinDirect = nanoTime() - begin;
 
         begin = nanoTime();
         for (int i = 0; i < iterate; i++) {
-            benchmarkJava(list);
+            benchmarkJava8(list);
         }
         long java = nanoTime() - begin;
 
@@ -111,33 +104,33 @@ public class CollectionBenchmark {
         long pass = nanoTime() - begin;
 
         totals.add(asList(
-                (long) list.size(),
-                java / iterate,
-                kotlin / iterate,
-                kotlinDirect / iterate,
-                copyList / iterate,
-                imperative / iterate,
-                solid / iterate,
-                pass / iterate));
+            (long) list.size(),
+            java / iterate,
+            kotlin / iterate,
+            kotlinDirect / iterate,
+            copyList / iterate,
+            imperative / iterate,
+            solid / iterate,
+            pass / iterate));
 
         overhead.add(asList(
-                (long) list.size(),
-                (java - imperative) / iterate,
-                (kotlin - imperative) / iterate,
-                (kotlinDirect - imperative) / iterate,
-                (copyList - imperative) / iterate,
-                (imperative - imperative) / iterate,
-                (solid - imperative) / iterate,
-                (pass - imperative) / iterate));
+            (long) list.size(),
+            (java - imperative) / iterate,
+            (kotlin - imperative) / iterate,
+            (kotlinDirect - imperative) / iterate,
+            (copyList - imperative) / iterate,
+            (imperative - imperative) / iterate,
+            (solid - imperative) / iterate,
+            (pass - imperative) / iterate));
     }
 
-    @TargetApi(Build.VERSION_CODES.N)
-    private static void benchmarkJava(ArrayList<Integer> list) {
-        list.stream()
-                .filter(it -> it % 10 != 0)
-                .map(Object::toString)
-                .flatMap(it -> Stream.of(it, it + 1))
-                .collect(Collectors.toList());
+    @NotNull
+    public static ArrayList<Integer> generate(int size) {
+        ArrayList<Integer> list = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            list.add(i);
+        }
+        return list;
     }
 
     private static String pad(Object value, int width) {
@@ -149,21 +142,29 @@ public class CollectionBenchmark {
         return builder.append(asString).toString();
     }
 
-    private static void benchmarkSolid(ArrayList<Integer> list) {
-        solid.stream.Stream.stream(list)
-                .filter(it -> it % 10 != 0)
-                .map(Object::toString)
-                .flatMap(it -> solid.stream.Stream.of(it, it + 1))
-                .collect(toList(list.size() * 2));
+    public static void benchmarkJava8(List<Integer> list) {
+        list.stream()
+            .filter(it -> it % 10 != 0)
+            .map(Object::toString)
+            .flatMap(it -> Stream.of(it, it + 1))
+            .collect(Collectors.toList());
     }
 
-    private static void benchmarkCopyList(ArrayList<Integer> list) {
+    public static void benchmarkSolid(List<Integer> list) {
+        solid.stream.Stream.stream(list)
+            .filter(it -> it % 10 != 0)
+            .map(Object::toString)
+            .flatMap(it -> solid.stream.Stream.of(it, it + 1))
+            .collect(toList(list.size() * 2));
+    }
+
+    public static void benchmarkCopyList(List<Integer> list) {
         List<Integer> filtered = CopyList.filter(list, it -> it % 10 != 0);
         List<String> mapped = CopyList.map(filtered, Object::toString);
         CopyList.flatMap(mapped, it -> asList(it, it + 1));
     }
 
-    private static void benchmarkImperative(ArrayList<Integer> list) {
+    public static void benchmarkImperative(List<Integer> list) {
         ArrayList<String> result = new ArrayList<>(list.size() * 2);
         for (int i = 0; i < list.size(); i++) {
             int it = list.get(i);
@@ -175,14 +176,19 @@ public class CollectionBenchmark {
         }
     }
 
-    private static void benchmarkPass(ArrayList<Integer> list) {
+    public static void benchmarkPass(List<Integer> list) {
         Pass.stream(list)
-                .filter(it -> it % 10 != 0)
-                .map(Object::toString)
-                .flatMap((it, consumer) -> {
-                    consumer.call(it);
-                    consumer.call(it + 1);
-                })
-                .collect(PassCollectors.toList(list.size() * 2));
+            .filter(it -> it % 10 != 0)
+            .map(Object::toString)
+            .flatMap(it -> Pass.of(it, it + 1))
+            .collect(PassCollectors.toList(list.size() * 2));
+    }
+
+    public static void benchmarkPassUnoptimized(List<Integer> list) {
+        Pass.stream(list)
+            .filter(it -> it % 10 != 0)
+            .map(Object::toString)
+            .flatMapList(it -> asList(it, it + 1))
+            .collect(PassCollectors.toList());
     }
 }

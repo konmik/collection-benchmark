@@ -1,7 +1,10 @@
 package com.konmik.collectionbenchmark
 
-object Benchmark {
-    fun benchmarkKotlin(list: ArrayList<Int>) {
+import java.util.*
+
+object BenchmarkKotlin {
+
+    fun benchmarkKotlinSequence(list: List<Int>) {
         list.asSequence()
                 .filter { it -> it % 10 != 0 }
                 .map(Int::toString)
@@ -9,7 +12,7 @@ object Benchmark {
                 .toCollection(ArrayList())
     }
 
-    fun benchmarkKotlinDirect(list: ArrayList<Int>) {
+    fun benchmarkKotlinList(list: List<Int>) {
         list.filter { it -> it % 10 != 0 }
                 .map(Int::toString)
                 .flatMap { it -> mutableListOf(it, it + 1) }
