@@ -1,7 +1,5 @@
 A simple test of collection libraries on JVM.
 
-No JMH, raw loops. You can blame me. :D
-
 Tested:
 
 - Java 8 streams
@@ -12,7 +10,8 @@ Tested:
 - Solid library
 - Pass (my new streaming library prototype)
 
-According to the benchmark, imperative code is the fastest. Not a big surprise.
+According to the benchmark, imperative code is the fastest.
+Not a big surprise.
 
 The big surprise is the overall poor performance of lazy libraries.
 In most cases it is not better than *CopyList* - my trivial implementation of
