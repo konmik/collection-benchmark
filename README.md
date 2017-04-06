@@ -20,30 +20,35 @@ operations on list which allocated a new list every time.
 
 The most interesting and perspective is *Pass* - my new look on collection libraries.
 Instead of being lazy, it is strict, so it does not need to keep counters
-and temporary variables for each operation. It also does not need to call
-`hasNext` for each processed item.
-*Pass* adds **from 2x to 20x less overhead** than lazy streaming libraries.
+and temporary variables for each operation.
+It also does not need to call `hasNext` for each processed item so it is thread-safe.
+*Pass* adds **from 2x to 5x less overhead** than lazy streaming libraries.
 
 My overall conclusion is that lazy evaluations are
 overcomplicated, slow, unsafe and overvalued.
 
+JMH tested results on my Mac with max 3% error:
+
 ```
-TOTALS
-                SIZE   1024    512    256    128     64     32     16      8      4      2
-     Kotlin sequence  78878  55096  23205   9217   4540   2670   1234    723    317    148
-         Kotlin list  73244  42902  19850  10224   4904   2628   1132    699    316    155
-      Java 8 streams  68229  37215  18002  11124   5243   2493   1158    673    377    197
-               Solid  72016  56111  18570  10260   5204   2910   1226    639    290    160
-            CopyList  66673  33480  16314  10906   5041   2576   1231    606    285    145
-                Pass  51870  35591  11850   6046   3421   1544    718    382    190    102
-          Imperative  43083  26227  10527   5929   2950   1468    687    324    140     60
-OVERHEAD
-                SIZE   1024    512    256    128     64     32     16      8      4      2
-     Kotlin sequence  35794  28869  12677   3287   1589   1202    546    399    176     87
-         Kotlin list  30161  16674   9323   4294   1954   1160    445    375    176     95
-      Java 8 streams  25145  10987   7475   5195   2293   1024    470    349    237    136
-               Solid  28932  29883   8042   4330   2253   1441    539    314    150     99
-            CopyList  23589   7253   5786   4976   2091   1107    543    282    145     85
-                Pass   8786   9364   1322    116    471     75     30     57     50     42
-          Imperative      0      0      0      0      0      0      0      0      0      0
+LIST SIZE                       2     8    32   128  1024
+
+BENCHMARK, nanoseconds
+BenchmarkJmh.imperative        46   198  1158  4848 39345
+BenchmarkJmh.pass              73   289  1424  5634 46695
+BenchmarkJmh.passUnoptimized   87   342  1693  6741 54779
+BenchmarkJmh.solid            109   472  2093  8626 71177
+BenchmarkJmh.copyList         116   411  2074  8022 63981
+BenchmarkJmh.kotlinSequence   116   471  2187  8945 71930
+BenchmarkJmh.kotlinList       131   506  2189  8530 71752
+BenchmarkJmh.java8            165   520  2153  8043 64735
+
+OVERHEAD, nanoseconds
+BenchmarkJmh.imperative         0     0     0     0     0
+BenchmarkJmh.pass              27    91   266   785  7350
+BenchmarkJmh.passUnoptimized   41   144   535  1892 15433
+BenchmarkJmh.solid             63   274   935  3777 31831
+BenchmarkJmh.copyList          69   213   916  3173 24635
+BenchmarkJmh.kotlinSequence    70   274  1029  4097 32584
+BenchmarkJmh.kotlinList        85   308  1031  3682 32407
+BenchmarkJmh.java8            119   323   996  3195 25390
 ```
